@@ -1,0 +1,57 @@
+/*
+已活时间判断
+蓝桥杯代码，高斯日记
+*/
+#include<iostream>
+using namespace std;
+
+struct date{
+  int year;
+  int month;
+  int day;
+};
+
+int yearatt(int year){
+  if(year%400==0){
+    return 1;
+  }else if(year%100==0){
+    return 0;
+  }else if(year%4==0){
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+
+void getday(date birth,date today){
+  int days=0;
+  date temp=birth;
+  int year[2][12]={{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+                  {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
+  days+=(year[yearatt(temp.year)][temp.month-1]-temp.day);
+  temp.month++;
+  temp.day=0;
+  if(temp.month>12){
+    temp.month=1;
+    temp.year++;
+  }
+  while(temp.year!=today.year||temp.month!=today.month){
+    days+=year[yearatt(temp.year)][temp.month-1];
+    temp.month++;
+    if(temp.month>12){
+      temp.month=1;
+      temp.year++;
+    }
+}
+  days+=today.day;
+  cout<<"sir,you hava lived:"<<days<<" days"<<endl;
+}
+
+int main(){
+  date birth,today;
+  cin>>birth.year>>birth.month>>birth.day;
+  cin>>today.year>>today.month>>today.day;
+  getday(birth,today);
+  return 0;
+}
