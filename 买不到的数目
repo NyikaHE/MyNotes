@@ -1,0 +1,12 @@
+/*任意输入两个数，找到最大的不能组合的数
+解决方案：数论
+*/
+#include<iostream>
+using namespace std;
+
+int main(){
+  int max,min;
+  cin>>min>>max;
+  cout<<max*min-max-min;
+  return 0;
+}
