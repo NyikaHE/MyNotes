@@ -1,0 +1,485 @@
+#include <iostream>
+#include <iomanip>
+#include <stdlib.h>
+#include <string>
+#include <vector>
+#include <cctype>
+#include "conio.h"
+
+using namespace std;
+
+void display(vector<vector<int>> result){
+	system("cls");
+	cout << "Keys for 2048" << "\n";
+	cout << "up" << "\n";
+	cout << "left" << "down" << "right" << "\n";
+	for (int i = 0; i < 21; ++i)
+		cout << "-";
+	cout << '\n';
+
+	for (int i = 0; i < 4; ++i){
+
+		for (int j = 0; j < 4; ++j){
+			if (result[i][j] == 0)
+				cout << "|" << setw(5);
+			else
+				cout << "|" << setw(4) << result[i][j];
+		}
+		cout << "|" << "\n";
+		for (int i = 0; i < 21; ++i)
+			cout << "-";
+		cout << '\n';
+	}
+
+
+}
+
+int getInput(){
+	int press = getch();
+	if (iscntrl(press))
+		return 0;
+	else{
+		switch (_getch()){
+		case 72: press = 1; break;//上
+		case 80: press = 2; break;//下
+		case 75: press = 3; break;//左
+		case 77: press = 4; break;//右
+		default: break;
+		}
+		return press;
+	}
+}
+
+//在随机的两个格子里产生数字2
+void newGame(vector<vector<int>> &result){
+	srand(time(NULL));
+	int num1 = rand() % 16;
+	srand(time(NULL));
+	int num2 = rand() % 16;
+	while (num2 == num1){
+		srand(time(NULL));
+		num2 = rand() % 16;
+	}
+
+	result[num1 / 4][num1 % 4] = 2;
+	result[num2 / 4][num2 % 4] = 2;
+
+	display(result);
+}
+
+//产生新的数字2
+void newNumber(vector<vector<int>> &result){
+	int num = 0;
+	for (int i = 0; i < 4; ++i){
+		for (int j = 0; j < 4; ++j){
+			if (result[i][j] == 0){
+				num++;
+			}
+		}
+	}
+	srand(time(NULL));
+	int location = rand() % num;
+	for (int i = 0; i < 4; ++i){
+		for (int j = 0; j < 4; ++j){
+			if (result[i][j] == 0 && location == 0){
+				result[i][j] = 2;
+				return;
+			}
+			else if (result[i][j] == 0 && location != 0)
+				location--;
+			else
+				;
+
+		}
+	}
+}
+
+
+//对每一行检查，相同数字则合并，遇到没数字的格子则跳过
+int process_left(vector<vector<int>> &result){
+	int flag = 0;
+	for (int i = 0; i < 4; ++i){
+
+		int k = 0; //记录待比较的数字
+		int flag1 = 0; //记录k数字的位置
+
+		for (int j = 0; j < 4; ++j){
+			if (result[i][j] == 0)
+				;
+			else{
+
+				if (result[i][j] == k){
+					//合并
+					result[i][flag1] = 2 * k;
+					result[i][j] = 0;
+					flag = 1;
+					//最多只能合并两个数，清空k值，从当前行的下一数字再进行判断
+					k = 0;
+					flag1 = 0;
+				}
+				else {  //当前数是从左往右的第一个数字，或者，当前数与前一个数不相等，更新k
+					k = result[i][j];
+					flag1 = j;
+				}
+			}
+		}
+	}
+
+	//调整格子中的数字，使其全部在左侧
+	for (int row = 0; row < 4; ++row){
+		int flag2 = -1; //标记当前行的从左往右第一个空位
+		for (int col = 0; col < 4; ++col){
+			if (result[row][col] != 0){
+				if (flag2 != -1){
+					result[row][flag2] = result[row][col];
+					result[row][col] = 0;
+					flag = 1;
+					//寻找下一个空位
+					for (int m = flag2 + 1; m <= col; ++m){
+						if (result[row][m] == 0){
+							flag2 = m;
+							break;
+						}
+					}
+				}
+				else
+					;
+			}
+			else{
+				if (flag2 == -1)
+					flag2 = col;
+				else
+					;
+			}
+
+		}
+	}
+
+	return flag;
+}
+
+
+
+int process_right(vector<vector<int>> &result){
+	int flag = 0;
+
+	for (int i = 0; i < 4; ++i){
+
+		int k = 0; //记录待比较的数字
+		int flag1 = 0; //记录k数字的位置
+
+		for (int j = 3; j >= 0; --j){
+			if (result[i][j] == 0)
+				;
+			else{
+
+				if (result[i][j] == k){
+					result[i][flag1] = 2 * k;
+					result[i][j] = 0;
+					flag = 1;
+					k = 0;
+					flag1 = 0;
+				}
+				else {
+					k = result[i][j];
+					flag1 = j;
+				}
+			}
+		}
+	}
+
+	for (int row = 0; row < 4; ++row){
+		int flag2 = -1;
+		for (int col = 3; col >= 0; --col){
+			if (result[row][col] != 0){
+				if (flag2 != -1){
+					result[row][flag2] = result[row][col];
+					result[row][col] = 0;
+					flag = 1;
+					for (int m = flag2 - 1; m >= col; --m){
+						if (result[row][m] == 0){
+							flag2 = m;
+							break;
+						}
+					}
+				}
+				else
+					;
+			}
+			else{
+				if (flag2 == -1)
+					flag2 = col;
+				else
+					;
+			}
+
+		}
+	}
+	return flag;
+}
+
+//对每一列检查，相同数字则合并，遇到没数字的格子则跳过
+int process_up(vector<vector<int>> &result){
+	int flag = 0;
+
+	for (int j = 0; j < 4; ++j){
+
+		int k = 0; //记录待比较的数字
+		int flag1 = 0; //记录k数字的位置
+
+		for (int i = 0; i < 4; ++i){
+			if (result[i][j] == 0)
+				;
+			else{
+
+				if (result[i][j] == k){
+					result[flag1][j] = 2 * k;
+					result[i][j] = 0;
+					flag = 1;
+					k = 0;
+					flag1 = 0;
+				}
+				else {
+					k = result[i][j];
+					flag1 = i;
+				}
+			}
+		}
+	}
+
+	for (int col = 0; col < 4; ++col){
+		int flag2 = -1;
+		for (int row = 0; row < 4; ++row){
+			if (result[row][col] != 0){
+				if (flag2 != -1){
+					result[flag2][col] = result[row][col];
+					result[row][col] = 0;
+					flag = 1;
+					for (int m = flag2 + 1; m <= row; ++m){
+						if (result[m][col] == 0){
+							flag2 = m;
+							break;
+						}
+					}
+				}
+				else
+					;
+			}
+			else{
+				if (flag2 == -1)
+					flag2 = row;
+				else
+					;
+			}
+
+		}
+	}
+	return flag;
+}
+
+
+
+int process_down(vector<vector<int>> &result){
+	int flag = 0;
+	for (int j = 0; j < 4; ++j){
+
+		int k = 0; //记录待比较的数字
+		int flag1 = 0; //记录k数字的位置
+
+		for (int i = 3; i >= 0; --i){
+			if (result[i][j] == 0)
+				;
+			else{
+
+				if (result[i][j] == k){
+					result[flag1][j] = 2 * k;
+					result[i][j] = 0;
+					flag = 1;
+					k = 0;
+					flag1 = 0;
+				}
+				else {
+					k = result[i][j];
+					flag1 = i;
+				}
+			}
+		}
+	}
+
+	for (int col = 0; col < 4; ++col){
+		int flag2 = -1;
+		for (int row = 3; row >= 0; --row){
+			if (result[row][col] != 0){
+				if (flag2 != -1){
+					result[flag2][col] = result[row][col];
+					result[row][col] = 0;
+					flag = 1;
+					for (int m = flag2 - 1; m >= row; --m){
+						if (result[m][col] == 0){
+							flag2 = m;
+							break;
+						}
+					}
+				}
+				else
+					;
+			}
+			else{
+				if (flag2 == -1)
+					flag2 = row;
+				else
+					;
+			}
+
+		}
+	}
+	return flag;
+}
+
+
+
+
+int process(int direction, vector<vector<int>> &result){
+	int flag = 0;
+	switch (direction){
+	case 1:
+		if (process_up(result) == 1){
+			newNumber(result);
+			flag = 1;
+		}
+		else
+			;
+		break;
+	case 2:
+		if (process_down(result) == 1){
+			newNumber(result);
+			flag = 1;
+		}
+		else
+			;
+		break;
+	case 3:
+		if (process_left(result) == 1){
+			newNumber(result);
+			flag = 1;
+		}
+		else
+			;
+		break;
+	case 4:
+		if (process_right(result) == 1){
+			newNumber(result);
+			flag = 1;
+		}
+		else
+			;
+		break;
+	default: break;
+	}
+	return flag;
+}
+
+
+//判断结束条件  得到2048,或者所有格子都有数字，但是不能再两两结合
+int judge(vector<vector<int>> &result){
+	int num = 0;
+	for (int i = 0; i < 4; ++i){
+		for (int j = 0; j < 4; ++j){
+			if (result[i][j] == 2048)
+				return 1; //得到2048，游戏成功
+			else if (result[i][j] == 0)
+				num++;
+			else
+				;
+
+		}
+	}
+	//4x4的格子全有数字
+	if (num == 0){
+		//行检查
+		for (int i = 0; i < 4; ++i){
+
+			int k = 0; //记录待比较的数字
+			for (int j = 0; j < 4; ++j){
+				if (result[i][j] == 0)
+					;
+				else{
+
+					if (result[i][j] == k)
+						return 3; //可以合并，继续游戏
+					else
+						k = result[i][j];
+
+				}
+			}
+		}
+		//列检查
+		for (int j = 0; j < 4; ++j){
+
+			int k = 0; //记录待比较的数字
+			for (int i = 0; i < 4; ++i){
+				if (result[i][j] == 0)
+					;
+				else{
+
+					if (result[i][j] == k)
+						return 3;
+					else
+						k = result[i][j];
+				}
+			}
+		}
+
+		return 2; //都不能合并，结束游戏
+
+	}
+	//4x4的格子有空位，继续游戏
+	else
+		return 3;
+}
+
+
+int main(void){
+	vector<int> row(4, 0);
+	vector<vector<int>> result;
+	for (int i = 0; i < 3; ++i)
+		result.push_back(row);
+	result.push_back(row);
+
+	newGame(result);
+
+	int flag = 0;
+	while (1){
+		int press = getInput();
+		if (press == 0)
+			continue;
+		else{
+			if (process(press, result) == 1){
+				display(result);
+				int p = judge(result);
+				if (p == 1){
+					flag = 1;
+					break;
+				}
+				else if (p == 2){
+					flag = 2;
+					break;
+				}
+				else
+					;
+			}
+			else
+				;
+		}
+
+
+	}
+
+	if (flag == 1)
+		cout << "\nyou win！\n";
+	else
+		cout << "\nyou lose\n";
+	while (1){
+		system("pause");
+	}
+}
