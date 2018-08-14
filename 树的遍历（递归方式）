@@ -1,0 +1,68 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+// 树的生成与遍历（递归方式）
+typedef struct TNode{
+    char data;
+    struct TNode *lchild,*rchild;
+}TNode, *Tree;
+
+vector<char> v={'1','2','0','4','6','0','0','0','3','0','5','0','0'};
+int count=0;
+
+// 树初始化
+int Init(Tree &tree){
+    char element=v[count];
+    count++;
+    tree=(Tree)malloc(sizeof(TNode));
+    if (element !='0') {
+        printf("%c\n",element);
+        tree->data=element;
+        Init(tree->lchild);
+        Init(tree->rchild);
+    } else{
+        tree=NULL;
+        return 0;
+    }
+    return 0;
+}
+
+// 先序遍历
+void PreOrder(Tree &t){
+    if(t!=NULL){
+        printf("%c ", t->data);
+        PreOrder(t->lchild);
+        PreOrder(t->rchild);
+    }
+}
+
+// 中序遍历
+void InOrder(Tree &t){
+    if(t!=NULL){
+        InOrder(t->lchild);
+        printf("%c ", t->data);
+        InOrder(t->rchild);
+    }
+}
+
+// 后序遍历
+void PostOrder(Tree &t){
+    if(t!=NULL){
+        PostOrder(t->lchild);
+        PostOrder(t->rchild);
+        printf("%c ", t->data);
+    }
+}
+
+int main() {
+    Tree t;
+    Init(t);
+    printf("\nPre:");
+    PreOrder(t);
+    printf("\nIn:");
+    InOrder(t);
+    printf("\nPost:");
+    PostOrder(t);
+    return 0;
+}
